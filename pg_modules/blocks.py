@@ -235,18 +235,70 @@ class FeatureFusionBlock(nn.Module):
 
     def forward(self, *xs):
         output = xs[0]
-
+        
+        #print(f"xs[0]: {xs[0].shape}")
+        
         if len(xs) == 2:
-            output = self.skip_add.add(output, xs[1])
-
+            #print(f"xs[1]: {xs[1].shape}")
+            # xs[1] = F.interpolate(xs[1], size=output.shape[2:], mode='bilinear', align_corners=self.align_corners)
+            # print(f"xs[1] resized: {xs[1].shape}")
+            # output = self.skip_add.add(output, xs[1])
+            xs_list = list(xs)
+            if output.shape != xs[1].shape:
+                xs_list[1] = F.interpolate(xs_list[1], size=output.shape[2:], mode='bilinear', align_corners=self.align_corners)
+            
+            #print(f"xs_list[1]: {xs_list[1].shape}")
+            output = self.skip_add.add(output, xs_list[1])
+        # upsampling -> output tensor upsample : 해상도 2배로
         output = nn.functional.interpolate(
             output, scale_factor=2, mode="bilinear", align_corners=self.align_corners
-        )
+        )   
 
         output = self.out_conv(output)
 
         return output
+    # def forward(self, *xs):
+    #     output = xs[0]
+        
+    #     print(f"x[0]: {xs[0].shape}")
+        
+    #     if len(xs) == 2:
+    #         print(f"output: {output.shape}")
+    #         print(f"x[1]: {xs[1].shape}")
+    #         # 크기 불일치 해결을 위한 보간
+    #         if output.shape != xs[1].shape:
+    #             xs[1] = F.interpolate(xs[1], size=output.shape[2:], mode='bilinear', align_corners=self.align_corners)
+    #         output = self.skip_add.add(output, xs[1])
 
+    #     output = nn.functional.interpolate(
+    #         output, scale_factor=2, mode="bilinear", align_corners=self.align_corners
+    #     )
+
+    #     output = self.out_conv(output)
+
+    #     return output
+    
+    # def forward(self, *xs):
+    #     output = xs[0]
+        
+    #     print(f"x[0]: {xs[0].shape}")
+        
+    #     if len(xs) == 2:
+    #         print(f"output: {output.shape}")
+    #         print(f"x[1]: {xs[1].shape}")
+    #         # xs를 리스트로 변환하여 크기 불일치를 해결
+    #         xs_list = list(xs)
+    #         if output.shape != xs[1].shape:
+    #             xs_list[1] = F.interpolate(xs[1], size=output.shape[2:], mode='bilinear', align_corners=self.align_corners)
+    #         output = self.skip_add.add(output, xs_list[1])
+
+    #     output = nn.functional.interpolate(
+    #         output, scale_factor=2, mode="bilinear", align_corners=self.align_corners
+    #     )
+
+    #     output = self.out_conv(output)
+
+    #     return output
 
 ### Misc
 

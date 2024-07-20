@@ -65,16 +65,27 @@ class SwappingDataset(data.Dataset):
         """Preprocess the Swapping dataset."""
         print("processing Swapping dataset images...")
 
-        temp_path   = os.path.join(self.image_dir,'*/')
-        pathes      = glob.glob(temp_path)
-        self.dataset = []
-        for dir_item in pathes:
-            join_path = glob.glob(os.path.join(dir_item,'*.jpg'))
-            print("processing %s"%dir_item,end='\r')
-            temp_list = []
-            for item in join_path:
-                temp_list.append(item)
-            self.dataset.append(temp_list)
+        #temp_path   = os.path.join(self.image_dir,'*/')
+        #print(temp_path)
+        #pathes      = glob.glob(self.image_dir)
+        #print(pathes)
+        
+        self.dataset = glob.glob(os.path.join(self.image_dir,'*.png'))
+        if len(self.dataset) == 0:
+            self.dataset = glob.glob(os.path.join(self.image_dir,'*.jpg'))
+        #print(self.dataset)
+        # self.dataset = []
+        # for dir_item in pathes:
+        #     try:
+        #         join_path = glob.glob(os.path.join(dir_item,'*.jpg'))
+        #     except:
+        #         join_path = glob.glob(os.path.join(dir_item,'*.png'))
+        #     print(join_path)
+        #     print("processing %s"%dir_item,end='\r')
+        #     temp_list = []
+        #     for item in join_path:
+        #         temp_list.append(item)
+        #     self.dataset.append(temp_list)
         random.seed(self.random_seed)
         random.shuffle(self.dataset)
         print('Finished preprocessing the Swapping dataset, total dirs number: %d...'%len(self.dataset))
@@ -84,19 +95,29 @@ class SwappingDataset(data.Dataset):
         dir_tmp1        = self.dataset[index]
         dir_tmp1_len    = len(dir_tmp1)
 
-        filename1   = dir_tmp1[random.randint(0,dir_tmp1_len-1)]
-        filename2   = dir_tmp1[random.randint(0,dir_tmp1_len-1)]
-        image1      = self.img_transform(Image.open(filename1))
-        image2      = self.img_transform(Image.open(filename2))
+        # filename1   = dir_tmp1[random.randint(0,dir_tmp1_len-1)]        
+        # filename2   = dir_tmp1[random.randint(0,dir_tmp1_len-1)]
+
+        image1      = self.img_transform(Image.open(dir_tmp1))
+        image2      = self.img_transform(Image.open(dir_tmp1))
         return image1, image2
     
     def __len__(self):
         """Return the number of images."""
         return self.num_images
+# Using os
+import os
+cpu_count_os = os.cpu_count()
+print(f"CPU cores (using os): {cpu_count_os}")
+
+# Using multiprocessing
+import multiprocessing
+cpu_count_mp = multiprocessing.cpu_count()
+print(f"CPU cores (using multiprocessing): {cpu_count_mp}")
 
 def GetLoader(  dataset_roots,
                 batch_size=16,
-                dataloader_workers=8,
+                dataloader_workers=cpu_count_mp,
                 random_seed = 1234
                 ):
     """Build and return a data loader."""
@@ -114,7 +135,10 @@ def GetLoader(  dataset_roots,
                             data_root, 
                             c_transforms,
                             "jpg",
+                            #"png",
                             random_seed)
+    # dataset = content_dataset()
+    print(f"Dataset size: {len(content_dataset)}")
     content_data_loader = data.DataLoader(dataset=content_dataset,batch_size=batch_size,
                     drop_last=True,shuffle=True,num_workers=num_workers,pin_memory=True)
     prefetcher = data_prefetcher(content_data_loader)

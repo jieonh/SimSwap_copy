@@ -1,0 +1,46 @@
+defaults:
+  - _self_
+
+project_name: "SVI-train"
+
+fine_tuning: true
+fine_tuning_dataset: '/workspace/dataset/karina'
+
+
+name: simswap
+gpu_ids: '0'
+checkpoints_dir: './logs/train/${now:%Y-%m-%d_%H-%M-%S}'
+isTrain: True
+random_seed: 2024
+
+# input/output sizes
+batchSize: 8
+
+# for displays
+use_tensorboard: True
+
+# for training
+#dataset: '/workspace/_dataset/dataset/sample_datasets/dfl-src-dst-phase-2/dst'
+dataset: '/workspace/dataset/img_align_celeba'
+
+continue_train: False
+load_pretrain: './checkpoints/simswap_256.onnx'
+which_epoch: '10000' # ?
+phase: 'train'
+niter: 10000 #10000
+niter_decay: 10000
+beta1: 0.0
+lr: 0.0004
+Gdeep: False
+
+# for discriminators
+lambda_feat: 10.0
+lambda_id: 30.0
+lambda_rec: 10.0
+
+Arc_path: 'arcface_model/arcface_checkpoint.tar'
+
+total_step: 100000 #000
+log_frep: 200
+sample_freq: 100 #00
+model_freq: 100 #000
